@@ -11,6 +11,12 @@ export default function HomePage() {
           </Link>
           <nav className="flex gap-6">
             <Link
+              href="/match"
+              className="text-gray-600 dark:text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+            >
+              素マッチ
+            </Link>
+            <Link
               href="/pricing"
               className="text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
             >
