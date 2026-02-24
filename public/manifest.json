@@ -1,0 +1,10 @@
+{
+  "name": "振る請求 - InvoiceFlow",
+  "short_name": "振る請求",
+  "description": "世界初・スマホを振って送る請求書。声で入力、振って送信。",
+  "start_url": "/shake",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#f59e0b",
+  "orientation": "portrait"
+}

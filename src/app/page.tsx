@@ -62,8 +62,9 @@ export default function HomePage() {
             },
             {
               icon: Zap,
-              title: '無料で開発',
-              desc: 'オープンソース技術で構築、追加コストゼロ',
+              title: '振る請求',
+              desc: '世界初！スマホを振って送る請求書',
+              href: '/shake',
             },
             {
               icon: Shield,
@@ -75,15 +76,27 @@ export default function HomePage() {
               title: '確実な収益',
               desc: 'サブスクリプションで安定した売上',
             },
-          ].map(({ icon: Icon, title, desc }) => (
-            <div
-              key={title}
-              className="p-6 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <Icon className="w-10 h-10 text-emerald-500 mb-4" />
-              <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">{title}</h3>
-              <p className="text-gray-600 dark:text-gray-400">{desc}</p>
-            </div>
+          ].map(({ icon: Icon, title, desc, href }) => (
+            href ? (
+              <Link
+                key={title}
+                href={href}
+                className="p-6 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-shadow hover:border-amber-500/50 block"
+              >
+                <Icon className="w-10 h-10 text-amber-500 mb-4" />
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">{title}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{desc}</p>
+              </Link>
+            ) : (
+              <div
+                key={title}
+                className="p-6 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <Icon className="w-10 h-10 text-emerald-500 mb-4" />
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">{title}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{desc}</p>
+              </div>
+            )
           ))}
         </section>
 

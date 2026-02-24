@@ -11,6 +11,7 @@ const notoSansJP = Noto_Sans_JP({
 export const metadata: Metadata = {
   title: 'InvoiceFlow - 請求書・見積書作成SaaS',
   description: '無料で始められる、月額固定料金の請求書・見積書作成サービス。フリーランス・小規模ビジネス向け。',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
