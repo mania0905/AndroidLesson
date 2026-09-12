@@ -130,6 +130,13 @@
   font-size: 0.92rem;
 }
 
+.hero__engine {
+  margin: 10px 0 0;
+  color: var(--brand);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
 .topbar {
   position: relative;
   z-index: 1;
@@ -139,6 +146,42 @@
   gap: 16px;
   margin-bottom: 20px;
   animation: rise 0.5s ease both;
+}
+
+.topbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.mode-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--line);
+}
+
+.mode-pill--llm {
+  background: rgba(47, 111, 94, 0.12);
+  color: var(--ok);
+}
+
+.mode-pill--demo {
+  background: rgba(184, 135, 60, 0.14);
+  color: #8a6a2d;
+}
+
+.notice {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(184, 135, 60, 0.12);
+  color: #6f5524;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .topbar__brand {
@@ -492,6 +535,16 @@
   color: var(--danger);
 }
 
+.prio--medium {
+  background: rgba(184, 135, 60, 0.16);
+  color: #8a6a2d;
+}
+
+.prio--low {
+  background: rgba(26, 58, 50, 0.08);
+  color: var(--muted);
+}
+
 .doc {
   margin: 0;
   white-space: pre-wrap;
@@ -508,13 +561,23 @@
   font-size: 0.86rem;
 }
 
-.slides header h3 {
+.slides__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+.slides header h3,
+.slides__head h3 {
   margin: 0 0 4px;
   font-family: var(--font-display);
 }
 
-.slides header p {
-  margin: 0 0 14px;
+.slides header p,
+.slides__head p {
+  margin: 0;
   color: var(--muted);
 }
 
@@ -555,7 +618,7 @@
 
 .image-draft__preview {
   position: relative;
-  height: 160px;
+  height: 220px;
   border-radius: 16px;
   margin-bottom: 14px;
   overflow: hidden;
@@ -565,6 +628,12 @@
   background:
     linear-gradient(120deg, rgba(26, 58, 50, 0.92), rgba(47, 111, 94, 0.75)),
     radial-gradient(circle at 70% 30%, rgba(184, 135, 60, 0.45), transparent 40%);
+}
+
+.image-draft__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .image-draft__glow {

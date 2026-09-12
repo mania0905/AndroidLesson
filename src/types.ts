@@ -46,6 +46,8 @@ export interface ImageDraft {
   style: string;
   prompt: string;
   palette: string[];
+  previewUrl?: string | null;
+  previewSource?: 'openai' | 'svg-fallback' | null;
 }
 
 export interface Deliverables {

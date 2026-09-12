@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { exportPresentationPptx } from './lib/export';
 import {
   emptyDeliverables,
   exportSessionMarkdown,
+  fetchEngineStatus,
   runCabinPipeline,
+  type EngineStatus,
 } from './lib/pipeline';
 import { createSpeechListener, isSpeechSupported } from './lib/speech';
 import {
@@ -44,9 +47,17 @@ export default function App() {
   const [deliverables, setDeliverables] = useState<Deliverables>(emptyDeliverables());
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
+  const [mode, setMode] = useState<'llm' | 'demo' | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [engine, setEngine] = useState<EngineStatus | null>(null);
+  const [exportingPptx, setExportingPptx] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
   const speechRef = useRef<ReturnType<typeof createSpeechListener>>(null);
   const speechSupported = useMemo(() => isSpeechSupported(), []);
+
+  useEffect(() => {
+    void fetchEngineStatus().then(setEngine);
+  }, []);
 
   useEffect(() => {
     feedRef.current?.scrollTo({
@@ -68,6 +79,7 @@ export default function App() {
     setSpeechError(null);
     setInput('');
     setPartial('');
+    setNotice(null);
 
     const userMessage: ChatItem = {
       kind: 'user',
@@ -84,6 +96,8 @@ export default function App() {
 
     setTopic(result.topic);
     setDeliverables(result.deliverables);
+    setMode(result.mode);
+    setNotice(result.notice ?? null);
     setRunning(false);
   }
 
@@ -119,10 +133,27 @@ export default function App() {
     listener.start();
   }
 
-  function handleExport() {
+  function handleExportMarkdown() {
     const md = exportSessionMarkdown(topic, deliverables);
     downloadText(`cabin-${Date.now()}.md`, md);
   }
+
+  async function handleExportPptx() {
+    if (!deliverables.presentation || exportingPptx) return;
+    setExportingPptx(true);
+    try {
+      await exportPresentationPptx(
+        deliverables.presentation,
+        `cabin-${Date.now()}.pptx`,
+      );
+    } finally {
+      setExportingPptx(false);
+    }
+  }
+
+  const engineLabel = engine?.llm
+    ? `LLM接続中${engine.model ? `（${engine.model}）` : ''}`
+    : 'デモモード（APIキー未設定）';
 
   return (
     <div className="app">
@@ -150,6 +181,7 @@ export default function App() {
             </button>
           </div>
           <p className="hero__note">運転中は利用しません。同乗・停車時向けです。</p>
+          <p className="hero__engine">{engineLabel}</p>
         </header>
       ) : (
         <header className="topbar">
@@ -161,8 +193,24 @@ export default function App() {
             </div>
           </div>
           <div className="topbar__actions">
-            <button type="button" className="btn btn--ghost" onClick={handleExport} disabled={!deliverables.minutes}>
-              Markdown書き出し
+            <span className={`mode-pill mode-pill--${mode ?? 'demo'}`}>
+              {mode === 'llm' ? 'LLM' : 'デモ'}
+            </span>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={handleExportMarkdown}
+              disabled={!deliverables.minutes}
+            >
+              Markdown
+            </button>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => void handleExportPptx()}
+              disabled={!deliverables.presentation || exportingPptx}
+            >
+              {exportingPptx ? 'PPTX作成中…' : 'PowerPoint'}
             </button>
           </div>
         </header>
@@ -181,6 +229,7 @@ export default function App() {
             </div>
 
             <div className="feed" ref={feedRef}>
+              {notice && <div className="notice">{notice}</div>}
               {chat.length === 0 && (
                 <div className="feed__empty">
                   <p>話したいテーマを音声か文字で渡してください。</p>
@@ -270,7 +319,12 @@ export default function App() {
 
             <div className="panel" role="tabpanel">
               <p className="panel__desc">{CATEGORY_META[activeCategory].description}</p>
-              <CategoryView category={activeCategory} deliverables={deliverables} />
+              <CategoryView
+                category={activeCategory}
+                deliverables={deliverables}
+                onExportPptx={() => void handleExportPptx()}
+                exportingPptx={exportingPptx}
+              />
             </div>
           </section>
         </main>
@@ -282,9 +336,13 @@ export default function App() {
 function CategoryView({
   category,
   deliverables,
+  onExportPptx,
+  exportingPptx,
 }: {
   category: CategoryId;
   deliverables: Deliverables;
+  onExportPptx: () => void;
+  exportingPptx: boolean;
 }) {
   if (category === 'decisions') {
     if (!deliverables.decisions.length) return <EmptyState />;
@@ -337,13 +395,23 @@ function CategoryView({
     if (!deck) return <EmptyState />;
     return (
       <div className="slides">
-        <header>
-          <h3>{deck.title}</h3>
-          <p>{deck.subtitle}</p>
+        <header className="slides__head">
+          <div>
+            <h3>{deck.title}</h3>
+            <p>{deck.subtitle}</p>
+          </div>
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={onExportPptx}
+            disabled={exportingPptx}
+          >
+            {exportingPptx ? '作成中…' : 'PPTXダウンロード'}
+          </button>
         </header>
         <div className="slides__grid">
           {deck.slides.map((slide, index) => (
-            <article key={slide.heading}>
+            <article key={`${slide.heading}-${index}`}>
               <span>Slide {index + 1}</span>
               <h4>{slide.heading}</h4>
               <ul>
@@ -362,10 +430,20 @@ function CategoryView({
   if (!image) return <EmptyState />;
   return (
     <div className="image-draft">
-      <div className="image-draft__preview" aria-hidden="true">
-        <div className="image-draft__glow" />
-        <p>画像下書きプレビュー</p>
+      <div className="image-draft__preview">
+        {image.previewUrl ? (
+          <img src={image.previewUrl} alt={image.title} />
+        ) : (
+          <>
+            <div className="image-draft__glow" />
+            <p>画像下書きプレビュー</p>
+          </>
+        )}
       </div>
+      <p className="muted">
+        プレビュー:{' '}
+        {image.previewSource === 'openai' ? 'OpenAI生成' : 'SVGフォールバック'}
+      </p>
       <h3>{image.title}</h3>
       <p>{image.concept}</p>
       <p className="muted">{image.style}</p>
