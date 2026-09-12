@@ -168,111 +168,113 @@ export default function App() {
         </header>
       )}
 
-      <main className={`workspace ${started ? 'workspace--active' : ''}`}>
-        <section className="meeting" aria-label="会議">
-          <div className="crew" aria-label="AIクルー">
-            {(Object.keys(AGENT_META) as AgentRole[]).map((role) => (
-              <div key={role} className={`crew__chip crew__chip--${role}`}>
-                <span>{AGENT_META[role].short}</span>
-                <strong>{AGENT_META[role].label}</strong>
-              </div>
-            ))}
-          </div>
-
-          <div className="feed" ref={feedRef}>
-            {chat.length === 0 && (
-              <div className="feed__empty">
-                <p>話したいテーマを音声か文字で渡してください。</p>
-                <p>進行役 → リサーチャー → 決定者 → 成果物作成者の順で下書きを埋めます。</p>
-              </div>
-            )}
-            {chat.map((item) =>
-              item.kind === 'user' ? (
-                <article key={item.id} className="bubble bubble--user">
-                  <header>
-                    <span>あなた</span>
-                    <span>{item.source === 'voice' ? '音声' : '文字'}</span>
-                  </header>
-                  <p>{item.text}</p>
-                </article>
-              ) : (
-                <article key={item.id} className={`bubble bubble--agent bubble--${item.role}`}>
-                  <header>
-                    <span>{AGENT_META[item.role].label}</span>
-                  </header>
-                  <p>{item.text}</p>
-                </article>
-              ),
-            )}
-            {partial && (
-              <article className="bubble bubble--user bubble--partial">
-                <header>
-                  <span>認識中</span>
-                </header>
-                <p>{partial}</p>
-              </article>
-            )}
-            {running && <div className="running">クルーが作業中…</div>}
-          </div>
-
-          <form
-            className="composer"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void runSession(input, 'text');
-            }}
-          >
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="例: 新機能の方針を決めて、議事録とスライド下書きを作って"
-              rows={3}
-              disabled={running}
-            />
-            <div className="composer__row">
-              <button
-                type="button"
-                className={`btn ${listening ? 'btn--danger' : 'btn--ghost'}`}
-                onClick={toggleListen}
-                disabled={running}
-              >
-                {listening ? '停止' : '音声入力'}
-              </button>
-              <button type="submit" className="btn btn--primary" disabled={running || !input.trim()}>
-                会議を回す
-              </button>
+      {started && (
+        <main className="workspace workspace--active">
+          <section className="meeting" aria-label="会議">
+            <div className="crew" aria-label="AIクルー">
+              {(Object.keys(AGENT_META) as AgentRole[]).map((role) => (
+                <div key={role} className={`crew__chip crew__chip--${role}`}>
+                  <span>{AGENT_META[role].short}</span>
+                  <strong>{AGENT_META[role].label}</strong>
+                </div>
+              ))}
             </div>
-            {speechError && <p className="error">{speechError}</p>}
-          </form>
-        </section>
 
-        <section className="board" aria-label="成果物ボード">
-          <div className="board__head">
-            <h2>成果物ボード</h2>
-            <p>動画以外の下書きをカテゴリ別に整理</p>
-          </div>
+            <div className="feed" ref={feedRef}>
+              {chat.length === 0 && (
+                <div className="feed__empty">
+                  <p>話したいテーマを音声か文字で渡してください。</p>
+                  <p>進行役 → リサーチャー → 決定者 → 成果物作成者の順で下書きを埋めます。</p>
+                </div>
+              )}
+              {chat.map((item) =>
+                item.kind === 'user' ? (
+                  <article key={item.id} className="bubble bubble--user">
+                    <header>
+                      <span>あなた</span>
+                      <span>{item.source === 'voice' ? '音声' : '文字'}</span>
+                    </header>
+                    <p>{item.text}</p>
+                  </article>
+                ) : (
+                  <article key={item.id} className={`bubble bubble--agent bubble--${item.role}`}>
+                    <header>
+                      <span>{AGENT_META[item.role].label}</span>
+                    </header>
+                    <p>{item.text}</p>
+                  </article>
+                ),
+              )}
+              {partial && (
+                <article className="bubble bubble--user bubble--partial">
+                  <header>
+                    <span>認識中</span>
+                  </header>
+                  <p>{partial}</p>
+                </article>
+              )}
+              {running && <div className="running">クルーが作業中…</div>}
+            </div>
 
-          <div className="tabs" role="tablist" aria-label="カテゴリ">
-            {(Object.keys(CATEGORY_META) as CategoryId[]).map((id) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={activeCategory === id}
-                className={`tabs__item ${activeCategory === id ? 'is-active' : ''}`}
-                onClick={() => setActiveCategory(id)}
-              >
-                {CATEGORY_META[id].label}
-              </button>
-            ))}
-          </div>
+            <form
+              className="composer"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void runSession(input, 'text');
+              }}
+            >
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="例: 新機能の方針を決めて、議事録とスライド下書きを作って"
+                rows={3}
+                disabled={running}
+              />
+              <div className="composer__row">
+                <button
+                  type="button"
+                  className={`btn ${listening ? 'btn--danger' : 'btn--ghost'}`}
+                  onClick={toggleListen}
+                  disabled={running}
+                >
+                  {listening ? '停止' : '音声入力'}
+                </button>
+                <button type="submit" className="btn btn--primary" disabled={running || !input.trim()}>
+                  会議を回す
+                </button>
+              </div>
+              {speechError && <p className="error">{speechError}</p>}
+            </form>
+          </section>
 
-          <div className="panel" role="tabpanel">
-            <p className="panel__desc">{CATEGORY_META[activeCategory].description}</p>
-            <CategoryView category={activeCategory} deliverables={deliverables} />
-          </div>
-        </section>
-      </main>
+          <section className="board" aria-label="成果物ボード">
+            <div className="board__head">
+              <h2>成果物ボード</h2>
+              <p>動画以外の下書きをカテゴリ別に整理</p>
+            </div>
+
+            <div className="tabs" role="tablist" aria-label="カテゴリ">
+              {(Object.keys(CATEGORY_META) as CategoryId[]).map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeCategory === id}
+                  className={`tabs__item ${activeCategory === id ? 'is-active' : ''}`}
+                  onClick={() => setActiveCategory(id)}
+                >
+                  {CATEGORY_META[id].label}
+                </button>
+              ))}
+            </div>
+
+            <div className="panel" role="tabpanel">
+              <p className="panel__desc">{CATEGORY_META[activeCategory].description}</p>
+              <CategoryView category={activeCategory} deliverables={deliverables} />
+            </div>
+          </section>
+        </main>
+      )}
     </div>
   );
 }
